@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hello, World!</title>
+
+  </head>
+  <body>
+      <h1 class="title">English writing skill developer </h1>
+      <p id="user"></p>
+      <form>
+      <label>title text :</label><br>
+      <input type = 'text' id = 'title-input' name = 'title' style="font-size:18pt;height:50px;width:1200px;"><br><br>
+      <label>content text :</label><br>
+      <textarea id="context" name="letter" rows="30" cols="200" placeholder="Write your letter here..."></textarea>
+      <br><button type = 'submt' id = 'sa-submit'> sugession-analization </button>
+      </form>
+      <h3>Modified para:</h3>
+      <p><div id = 'gen-ai-text'></div></p>
+
+      <h3>improvements:</h3>
+      <div id = 'suggesstions'></div>
+
+      {% comment %} <h3>mistaken words:</h3>
+      <div id = 'word-list'></div> {% endcomment %}
+      {% comment %} <script src="{% load static 'index.js' %}"></script> {% endcomment %}
+      <script>
+        const doOnSubmit = document.querySelector('#sa-submit');
+        const titleData = document.querySelector('#title-input');
+        const contextDta = document.querySelector('#context');
+        const outputText = document.querySelector('#gen-ai-text');
+        const outputSugg = document.querySelector('#suggesstions');
+
+        function getOutput(backendData) {
+            outputText.innerHTML = `<p>${backendData.text}</p>`;
+            outputSugg.innerHTML = `<p>${backendData.sugession}</p>`;
+        }
+
+        doOnSubmit.addEventListener('click', function (event) {
+          console.log("submit done");
+          event.preventDefault();
+          apiUrl = 'http://127.0.0.1:8000/app-api/get-gpt-help';
+          console.log(titleData.value);
+          console.log(contextDta.value);
+          data = {
+              title: titleData.value,
+              context: contextDta.value
+          }
+          // backendData = data;
+                            // Your JSON data
+            const jsonData ={title: titleData.value, context: contextDta.value};
+
+            // Set up options for the fetch request
+            const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' // Set content type to JSON
+            },
+            body: JSON.stringify(jsonData) // Convert JSON data to a string and set it as the request body
+            };
+
+            // Make the fetch request with the provided options
+            fetch('http://127.0.0.1:8000/app-api/get-gpt-help', options)
+            .then(response => {
+                // Check if the request was successful
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                // Parse the response as JSON
+                return response.json();
+            })
+            .then(data => {
+                // Handle the JSON data
+                backendData = data;
+                console.log(data);
+            })
+            .catch(error => {
+                // Handle any errors that occurred during the fetch
+                console.error('Fetch error:', error);
+            });
+          console.log("HI");
+          console.log(backendData);
+          //getOutput(backendData);
+          outputText.innerHTML = `<p>${backendData.text}</p>`;
+          let sugessions = backendData.sugession;
+          let paras = sugessions.split(':\n')
+          console.log(paras);
+          for(let div in paras){
+            if ((div%2) == 0 ){
+            outputSugg.innerHTML += `<div>${paras[div]}</div><br>`;
+            }else{
+            outputSugg.innerHTML += `<div>==>${paras[div]}</div><br>`;
+            }
+          }
+          //outputSugg.innerHTML = `<p>${backendData.sugession}</p>`;
+        });
+      </script>
+
+  </body>
+</html>
